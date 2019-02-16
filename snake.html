@@ -49,9 +49,7 @@
     var right = true;
     var up = false;
     var down = false;
-    var snakeNum = 3;
-    var tempx;
-    var tempy;
+    var eatenRight = false;
 
     var locArray = [];
     var randomPos;
@@ -62,57 +60,89 @@
         graphics.clearRect(0,0,canvas.width,canvas.height);  // Clear the canvas, so it shows its background color.
         graphics.drawImage(image, randomPos[0], randomPos[1], 20, 20);
 
+        if(right == true){
+            if(frameNumber % 20 == 0){
+                x = 20;
+                snakeArray.push([snakeArray[snakeArray.length-1][0]+x, snakeArray[snakeArray.length-1][1]]);
+                snakeArray.shift();
+            }
+            else{
+                x = 0;
+            }
+            y = 0;
 
-        if(frameNumber % 20 == 0){
-            if(right == true){
-                x = x + 20;
+        }
+        if(left == true){
+            if(frameNumber % 20 == 0){
+                x = 20;
+                snakeArray.push([snakeArray[snakeArray.length-1][0]-x, snakeArray[snakeArray.length-1][1]]);
+                snakeArray.shift();
             }
-            if(left == true){
-                x = x - 20;
+            else{
+                x = 0;
             }
-            if(up == true){
-                y = y + 20;
+            y = 0
+        }
+        if(up == true){
+            if(frameNumber % 20 == 0){
+                y = 20
+                snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]-y]);
+                snakeArray.shift();
             }
-            if(down == true){
-                y = y - 20;
+            else{
+                y = 0;
             }
+            x = 0;
+        }
+        if(down == true){
+            if(frameNumber % 20 == 0){
+                y = 20
+                snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]+y]);
+                snakeArray.shift();
+            }
+            else{
+                y = 0;
+            }
+            x = 0;
         }
 
-        for(var i = 0; i < snakeArray.length; i++){
+        for(var i = snakeArray.length-1; i >= 0 ; i--){
             graphics.beginPath();
             graphics.strokeStyle = "#000000";
 
             if(right == true){
-                tempx = snakeArray[i][0]+x;
-                tempy = snakeArray[i][1]+y;
-                
-                graphics.strokeRect(tempx, tempy, 20, 20)
-                snakeArray2[i][0] = snakeArray[i][0]+x;
-                snakeArray2[i][1] = snakeArray[i][1]+y;
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
                 graphics.lineWidth = 2;
-                if(JSON.stringify(snakeArray2[i]) == JSON.stringify(randomPos)){
-                    console.log("hello")
-                    snakeArray.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
-                    snakeArray2.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0]+x, snakeArray[snakeArray.length-1][1]]);
                     locationGenerator();
-                    console.log(randomPos);
                 }
             }
 
             if(down == true){
-                tempx = snakeArray[i][0]+x;
-                tempy = snakeArray[i][1]+y;
-                
-                graphics.strokeRect(tempx, tempy, 20, 20)
-                snakeArray2[i][0] = snakeArray[i][0]+x;
-                snakeArray2[i][1] = snakeArray[i][1]+y;
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
                 graphics.lineWidth = 2;
-                if(JSON.stringify(snakeArray2[i]) == JSON.stringify(randomPos)){
-                    
-                    snakeArray.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
-                    snakeArray2.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]+y]);
                     locationGenerator();
-                    console.log(randomPos);
+                }
+            }
+
+            if(up == true){
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]-y]);
+                    locationGenerator();
+                }
+            }
+
+            if(left == true){
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0]-x, snakeArray[snakeArray.length-1][1]]);
+                    locationGenerator();
                 }
             }
         }
@@ -133,7 +163,6 @@
                 return;
             }
             else{
-                x-=20;
                 resetArrow(false,false,true,false)
             }
 		    break;
@@ -142,7 +171,6 @@
                 return;
             }
             else{
-                x+=20;
                 resetArrow(false,false,false,true)
             }
 		    break;
@@ -151,7 +179,6 @@
                 return;
             }
             else{
-                y-=20;
                 resetArrow(true,false,false,false)
             }
 		    break;
@@ -160,7 +187,6 @@
                 return;
             }
             else{
-                y+=20;
                 resetArrow(false,true,false,false)
             }
 		    break;
@@ -226,12 +252,9 @@
 
         // GAME INIT
 
-        snakeArray.push([40,0]);
-        snakeArray.push([20,0]);
         snakeArray.push([0,0]);
-        snakeArray2.push([40,0]);
-        snakeArray2.push([20,0]);
-        snakeArray2.push([0,0]);
+        snakeArray.push([20,0]);
+        snakeArray.push([40,0]);
 
         generatePixelArray();
         locationGenerator();

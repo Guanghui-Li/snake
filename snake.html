@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html>
+<!--
+   This web page shows how to do a simple animation using 2D canvas graphics.
+   It also defines functions applyWindowtoViewportTransformation, for setting
+   up a coordinate system on the canvas, and addGraphicsContextExtras, for adding
+   some extra drawing functions to a graphics context, such as functions for drawing
+   lines and ovals.  Use this page as a basis for experimenting with animation.
+-->
+<head>
+<meta charset="UTF-8">
+<title>Snake</title>
+<style>
+    /* This style section is here to make the canvas more obvious on the
+       page.  It is white on a light gray page background, with a thin
+       black border. */
+    body {
+        background-color: #DDDDDD;
+    }
+    canvas {
+        background-color: white;
+        display: block;
+    }
+    #canvasholder {
+        border:2px solid black;
+        float: left; /* This makes the border exactly fit the canvas. */
+    }
+</style>
+<script>
+
+    "use strict";  // gives improved error-checking in scripts.
+
+    var canvas;    // The canvas element on which we will draw.
+    var graphics;  // A 2D graphics context for drawing on the canvas.
+
+    var elapsedTimeMillis;  // This will be the time since the animation started;
+                            // will be zero in the first frame.
+
+    var image;
+    var allLoaded;
+    var frameNumber;
+    var startTime;
+    var snakeArray = [];
+    var snakeArray2 = [];
+    var x = 0;
+    var y = 0;
+    var left, right, up, down;
+    var snakeNum = 3;
+    var tempx;
+    var tempy;
+
+    var locArray = [];
+    var randomPos;
+
+
+    function draw() {
+	
+        graphics.clearRect(0,0,canvas.width,canvas.height);  // Clear the canvas, so it shows its background color.
+        graphics.drawImage(image, randomPos[0], randomPos[1], 20, 20);
+
+
+
+        if(frameNumber % 20 == 0){
+            x = x + 20;
+        }
+
+        for(var i = 0; i < snakeArray.length; i++){
+            graphics.beginPath();
+            graphics.strokeStyle = "#000000";
+            tempx = snakeArray[i][0]+x;
+            tempy = snakeArray[i][1]+y;
+            //snakeArray[i] = [tempx, tempy];
+            graphics.strokeRect(tempx, tempy, 20, 20)
+            snakeArray2[i][0] = snakeArray[i][0]+x;
+            snakeArray2[i][1] = snakeArray[i][1]+y;
+            graphics.lineWidth = 2;
+            if(JSON.stringify(snakeArray2[i]) == JSON.stringify(randomPos)){
+                console.log("hello")
+                snakeArray.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                snakeArray2.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                locationGenerator();
+                console.log(randomPos);
+            }
+            
+        }
+
+    
+    } // end of draw()
+    
+    
+
+    function doKeyDown(evt) {
+        var code = evt.keyCode;  // Numerical code for key that was pressed.
+        switch (code) {
+        case 37:  // left arrow key
+            // if(left == true || right == true){
+            //     return;
+            // }
+            // else{
+                x-=20;
+            //}
+		    break;
+		case 39:  // right arrow key
+        if(left == true || right == true){
+                return;
+            }
+            else{
+                x+=20;
+            }
+		    break;
+		case 38:  // up arrow key
+            y-=20;
+		    break;
+		case 40:  // down arrow key
+            y+=20;
+		    break;
+        }
+    }
+    
+
+    /**
+     *  Draw one frame of the animation, and call requestAnimationFrame() to arrange
+     *  for the function to be called again.
+     */
+    function doFrame() {
+        frameNumber++;
+        elapsedTimeMillis = Date.now() - startTime;
+
+		// GAME LOGIC here
+	
+        draw();
+
+        requestAnimationFrame(doFrame);
+    }
+    
+
+    function imageLoaded() {
+		allLoaded = true;
+    }
+
+
+    function generatePixelArray(){
+        for(var r = 0; r < 600; r+=20){
+            for(var c = 0; c < 600; c+=20){
+                locArray.push([r,c]);
+            }
+        }
+    }
+
+    function locationGenerator(){
+        var randomNum = Math.floor(Math.random() * 900);
+        randomPos = [locArray[randomNum][0], locArray[randomNum][1]];
+    }
+
+
+
+	// this function gets called when HTML page loads
+	// canvas context gets initialized
+	// one sample image is loaded
+	// keyboard handler initialized
+	// game loop is setup
+    function init() {
+        try {
+            canvas = document.getElementById("canvas");
+            graphics = canvas.getContext("2d");
+        } catch(e) {
+            document.getElementById("canvasholder").innerHTML =
+               "Canvas graphics is not supported.<br>" +
+               "An error occurred while initializing graphics.";
+        }
+		image = new Image(60, 45);   // using optional size for image
+		// load an image of intrinsic size 300x227 in CSS pixels
+		image.src = 'https://openclipart.org/image/2400px/svg_to_png/243661/1457652300.png';
+		image.onload = imageLoaded();
+		while(!allLoaded) { } // very risky 
+
+        // GAME INIT
+        left = false;
+        right = true;
+        up = false;
+        down = false;
+
+        snakeArray.push([40,0]);
+        snakeArray.push([20,0]);
+        snakeArray.push([0,0]);
+        snakeArray2.push([40,0]);
+        snakeArray2.push([20,0]);
+        snakeArray2.push([0,0]);
+
+        generatePixelArray();
+        locationGenerator();
+
+		// handle keyboard
+        document.addEventListener("keydown", doKeyDown, false);
+
+        frameNumber = 0;
+        elapsedTimeMillis = 0;
+        startTime = Date.now();  // current time, in milliseconds.
+        draw();  // Call draw() to draw on the canvas.
+        if (!window.requestAnimationFrame) { // This is for Internet Explorer 9
+            window.requestAnimationFrame = function(callback) {
+                setTimeout(callback, 1000/60);    
+            }
+        }
+        requestAnimationFrame(doFrame);
+    }
+    
+</script>
+</head>
+<body onload="init()"> <!-- the onload attribute here is what calls the init() function -->
+
+<h2>Snake</h2>
+<p id='score'></p>
+<noscript>
+    <!-- This message will be shown in the page if JavaScript is not available. -->
+<p>JavaScript is required to use this page.</p>
+</noscript>
+
+<div id="canvasholder">
+<canvas id="canvas" width="600" height="600">
+    <!-- This message is shown on the page if the browser doesn't support the canvas element. -->
+Canvas not supported.
+</canvas>
+</div>
+
+</body>
+</html>

@@ -34,22 +34,21 @@
     var canvas;    // The canvas element on which we will draw.
     var graphics;  // A 2D graphics context for drawing on the canvas.
 
-    var elapsedTimeMillis;  // This will be the time since the animation started;
-                            // will be zero in the first frame.
-
+    var id;
     var image;
     var allLoaded;
-    var frameNumber;
+    var frameNumber = 0;
     var startTime;
+    var snakeNum = 0;
+    var highScore;
     var snakeArray = [];
-    var snakeArray2 = [];
     var x = 0;
     var y = 0;
     var left = false;
     var right = true;
     var up = false;
     var down = false;
-    var eatenRight = false;
+    var stop = false;
 
     var locArray = [];
     var randomPos;
@@ -60,6 +59,83 @@
         graphics.clearRect(0,0,canvas.width,canvas.height);  // Clear the canvas, so it shows its background color.
         graphics.drawImage(image, randomPos[0], randomPos[1], 20, 20);
 
+        populateArrayByFrame();
+
+        for(var i = snakeArray.length-1; i >= 0 ; i--){
+            graphics.beginPath();
+            graphics.strokeStyle = "#000000";
+
+            if(right == true){
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0]+x, snakeArray[snakeArray.length-1][1]]);
+                    snakeNum++;
+                    locationGenerator();
+                }
+                if(snakeArray[snakeArray.length-1][0] >= 600){
+                    cancelAnimationFrame(id);
+                    document.getElementById("message").innerText = "Hit a Wall, Game over";
+                }
+            }
+
+            if(down == true){
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]+y]);
+                    snakeNum++;
+                    locationGenerator();
+                }
+                if(snakeArray[snakeArray.length-1][1] >= 600){
+                    cancelAnimationFrame(id);
+                    document.getElementById("message").innerText = "Hit a Wall, Game over";
+                }
+            }
+
+            if(up == true){
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]-y]);
+                    snakeNum++;
+                    locationGenerator();
+                }
+                if(snakeArray[snakeArray.length-1][1] < 0){
+                    cancelAnimationFrame(id);
+                    document.getElementById("message").innerText = "Hit a Wall, Game over";
+                }
+            }
+
+            if(left == true){
+                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
+                    snakeArray.push([snakeArray[snakeArray.length-1][0]-x, snakeArray[snakeArray.length-1][1]]);
+                    snakeNum++;
+                    locationGenerator();
+                }
+                if(snakeArray[snakeArray.length-1][0] < 0){
+                    cancelAnimationFrame(id);
+                    document.getElementById("message").innerText = "Hit a Wall, Game over";
+                }
+            }
+        }
+        checkSelfEating()
+        if(localStorage.getItem("highScore") < snakeNum){
+            localStorage.setItem("highScore", snakeNum);
+            document.getElementById("highScore").innerText = "Highest Score: " + snakeNum;
+        }
+    } // end of draw()
+    
+    function resetArrow(up0, down0, left0, right0){
+        down = down0;
+        left = left0;
+        right = right0;
+        up = up0;
+    }
+
+    function populateArrayByFrame(){
         if(right == true){
             if(frameNumber % 20 == 0){
                 x = 20;
@@ -105,54 +181,6 @@
             }
             x = 0;
         }
-
-        for(var i = snakeArray.length-1; i >= 0 ; i--){
-            graphics.beginPath();
-            graphics.strokeStyle = "#000000";
-
-            if(right == true){
-                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
-                graphics.lineWidth = 2;
-                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
-                    snakeArray.push([snakeArray[snakeArray.length-1][0]+x, snakeArray[snakeArray.length-1][1]]);
-                    locationGenerator();
-                }
-            }
-
-            if(down == true){
-                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
-                graphics.lineWidth = 2;
-                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
-                    snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]+y]);
-                    locationGenerator();
-                }
-            }
-
-            if(up == true){
-                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
-                graphics.lineWidth = 2;
-                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
-                    snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]-y]);
-                    locationGenerator();
-                }
-            }
-
-            if(left == true){
-                graphics.strokeRect(snakeArray[i][0], snakeArray[i][1], 20, 20)
-                graphics.lineWidth = 2;
-                if(JSON.stringify(snakeArray[i]) == JSON.stringify(randomPos)){
-                    snakeArray.push([snakeArray[snakeArray.length-1][0]-x, snakeArray[snakeArray.length-1][1]]);
-                    locationGenerator();
-                }
-            }
-        }
-    } // end of draw()
-    
-    function resetArrow(up0, down0, left0, right0){
-        down = down0;
-        left = left0;
-        right = right0;
-        up = up0;
     }
 
     function doKeyDown(evt) {
@@ -199,14 +227,11 @@
      *  for the function to be called again.
      */
     function doFrame() {
+        document.getElementById("score").innerHTML = "Score: " + snakeNum;
         frameNumber++;
-        elapsedTimeMillis = Date.now() - startTime;
-
-		// GAME LOGIC here
-	
+        id = requestAnimationFrame(doFrame);
         draw();
-
-        requestAnimationFrame(doFrame);
+    
     }
     
 
@@ -228,7 +253,14 @@
         randomPos = [locArray[randomNum][0], locArray[randomNum][1]];
     }
 
-
+    function checkSelfEating(){
+        for(var k = 0; k < snakeArray.length-1; k++){
+            if(JSON.stringify(snakeArray[snakeArray.length-1]) == JSON.stringify(snakeArray[k])){
+                cancelAnimationFrame(id);
+                document.getElementById("message").innerHTML = "Self Destruct, Game Over";
+            }
+        }
+    }
 
 	// this function gets called when HTML page loads
 	// canvas context gets initialized
@@ -251,7 +283,6 @@
 		while(!allLoaded) { } // very risky 
 
         // GAME INIT
-
         snakeArray.push([0,0]);
         snakeArray.push([20,0]);
         snakeArray.push([40,0]);
@@ -262,9 +293,20 @@
 		// handle keyboard
         document.addEventListener("keydown", doKeyDown, false);
 
-        frameNumber = 0;
-        elapsedTimeMillis = 0;
-        startTime = Date.now();  // current time, in milliseconds.
+        //check broswer session support
+        if (typeof(Storage) !== "undefined") {
+            if(localStorage.getItem("highScore") != null){
+                document.getElementById("highScore").innerHTML = "Highest Score: " + localStorage.getItem("highScore");
+            }
+            else{//is null
+                localStorage.setItem("highScore", 0); 
+                document.getElementById("highScore").innerHTML = "Highest Score: " + 0;
+            }
+        }
+        else {
+            document.getElementById("highScore").innerHTML = "Sorry, your browser does not support local Storage...";
+        }
+
         draw();  // Call draw() to draw on the canvas.
         if (!window.requestAnimationFrame) { // This is for Internet Explorer 9
             window.requestAnimationFrame = function(callback) {
@@ -277,20 +319,22 @@
 </script>
 </head>
 <body onload="init()"> <!-- the onload attribute here is what calls the init() function -->
+    <noscript>
+        <!-- This message will be shown in the page if JavaScript is not available. -->
+    <p>JavaScript is required to use this page.</p>
+    </noscript>
 
-<h2>Snake</h2>
-<p id='score'></p>
-<noscript>
-    <!-- This message will be shown in the page if JavaScript is not available. -->
-<p>JavaScript is required to use this page.</p>
-</noscript>
+    <div id="canvasholder">
+        <canvas id="canvas" width="600" height="600">
+            <!-- This message is shown on the page if the browser doesn't support the canvas element. -->
+        Canvas not supported.
+        </canvas>
+    </div>
 
-<div id="canvasholder">
-<canvas id="canvas" width="600" height="600">
-    <!-- This message is shown on the page if the browser doesn't support the canvas element. -->
-Canvas not supported.
-</canvas>
-</div>
+    <h2>Snake</h2>
+    <p id="message"></p> 
+    <p id="score"></p>
+    <p id="highScore"></p>
 
 </body>
 </html>

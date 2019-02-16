@@ -45,7 +45,10 @@
     var snakeArray2 = [];
     var x = 0;
     var y = 0;
-    var left, right, up, down;
+    var left = false;
+    var right = true;
+    var up = false;
+    var down = false;
     var snakeNum = 3;
     var tempx;
     var tempy;
@@ -60,60 +63,106 @@
         graphics.drawImage(image, randomPos[0], randomPos[1], 20, 20);
 
 
-
         if(frameNumber % 20 == 0){
-            x = x + 20;
+            if(right == true){
+                x = x + 20;
+            }
+            if(left == true){
+                x = x - 20;
+            }
+            if(up == true){
+                y = y + 20;
+            }
+            if(down == true){
+                y = y - 20;
+            }
         }
 
         for(var i = 0; i < snakeArray.length; i++){
             graphics.beginPath();
             graphics.strokeStyle = "#000000";
-            tempx = snakeArray[i][0]+x;
-            tempy = snakeArray[i][1]+y;
-            //snakeArray[i] = [tempx, tempy];
-            graphics.strokeRect(tempx, tempy, 20, 20)
-            snakeArray2[i][0] = snakeArray[i][0]+x;
-            snakeArray2[i][1] = snakeArray[i][1]+y;
-            graphics.lineWidth = 2;
-            if(JSON.stringify(snakeArray2[i]) == JSON.stringify(randomPos)){
-                console.log("hello")
-                snakeArray.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
-                snakeArray2.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
-                locationGenerator();
-                console.log(randomPos);
-            }
-            
-        }
 
-    
+            if(right == true){
+                tempx = snakeArray[i][0]+x;
+                tempy = snakeArray[i][1]+y;
+                
+                graphics.strokeRect(tempx, tempy, 20, 20)
+                snakeArray2[i][0] = snakeArray[i][0]+x;
+                snakeArray2[i][1] = snakeArray[i][1]+y;
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray2[i]) == JSON.stringify(randomPos)){
+                    console.log("hello")
+                    snakeArray.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                    snakeArray2.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                    locationGenerator();
+                    console.log(randomPos);
+                }
+            }
+
+            if(down == true){
+                tempx = snakeArray[i][0]+x;
+                tempy = snakeArray[i][1]+y;
+                
+                graphics.strokeRect(tempx, tempy, 20, 20)
+                snakeArray2[i][0] = snakeArray[i][0]+x;
+                snakeArray2[i][1] = snakeArray[i][1]+y;
+                graphics.lineWidth = 2;
+                if(JSON.stringify(snakeArray2[i]) == JSON.stringify(randomPos)){
+                    
+                    snakeArray.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                    snakeArray2.push([(snakeArray[snakeArray.length-1][0]-(snakeNum-2)*20),0]);
+                    locationGenerator();
+                    console.log(randomPos);
+                }
+            }
+        }
     } // end of draw()
     
-    
+    function resetArrow(up0, down0, left0, right0){
+        down = down0;
+        left = left0;
+        right = right0;
+        up = up0;
+    }
 
     function doKeyDown(evt) {
         var code = evt.keyCode;  // Numerical code for key that was pressed.
         switch (code) {
         case 37:  // left arrow key
-            // if(left == true || right == true){
-            //     return;
-            // }
-            // else{
+            if(left == true || right == true){
+                return;
+            }
+            else{
                 x-=20;
-            //}
+                resetArrow(false,false,true,false)
+            }
 		    break;
 		case 39:  // right arrow key
-        if(left == true || right == true){
+            if(left == true || right == true){
                 return;
             }
             else{
                 x+=20;
+                resetArrow(false,false,false,true)
             }
 		    break;
 		case 38:  // up arrow key
-            y-=20;
+            if(up == true || down == true){
+                return;
+            }
+            else{
+                y-=20;
+                resetArrow(true,false,false,false)
+            }
 		    break;
 		case 40:  // down arrow key
-            y+=20;
+            if(up == true || down == true){
+                return;
+            }
+            else{
+                y+=20;
+                resetArrow(false,true,false,false)
+            }
 		    break;
         }
     }
@@ -176,10 +225,6 @@
 		while(!allLoaded) { } // very risky 
 
         // GAME INIT
-        left = false;
-        right = true;
-        up = false;
-        down = false;
 
         snakeArray.push([40,0]);
         snakeArray.push([20,0]);

@@ -40,8 +40,10 @@
     var frameNumber = 0;
     var startTime;
     var snakeNum = 0;
+    var speed = 1;
     var highScore;
     var snakeArray = [];
+    var interval = 20;
     var x = 0;
     var y = 0;
     var left = false;
@@ -136,8 +138,22 @@
     }
 
     function populateArrayByFrame(){
+
+        //Increase speed
+        if(snakeNum != 0){
+            if(snakeNum % 5 == 0){
+                if(interval > 2){
+                    interval -= 1;
+                    snakeNum++;
+                    speed++;
+                    document.getElementById("speed").innerHTML = "Speed: " + speed;
+                }
+            }
+        }
+
+        //push to the head first and then delete the tail
         if(right == true){
-            if(frameNumber % 20 == 0){
+            if(frameNumber % interval == 0){
                 x = 20;
                 snakeArray.push([snakeArray[snakeArray.length-1][0]+x, snakeArray[snakeArray.length-1][1]]);
                 snakeArray.shift();
@@ -149,7 +165,7 @@
 
         }
         if(left == true){
-            if(frameNumber % 20 == 0){
+            if(frameNumber % interval == 0){
                 x = 20;
                 snakeArray.push([snakeArray[snakeArray.length-1][0]-x, snakeArray[snakeArray.length-1][1]]);
                 snakeArray.shift();
@@ -160,7 +176,7 @@
             y = 0
         }
         if(up == true){
-            if(frameNumber % 20 == 0){
+            if(frameNumber % interval == 0){
                 y = 20
                 snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]-y]);
                 snakeArray.shift();
@@ -171,7 +187,7 @@
             x = 0;
         }
         if(down == true){
-            if(frameNumber % 20 == 0){
+            if(frameNumber % interval == 0){
                 y = 20
                 snakeArray.push([snakeArray[snakeArray.length-1][0], snakeArray[snakeArray.length-1][1]+y]);
                 snakeArray.shift();
@@ -246,10 +262,14 @@
                 locArray.push([r,c]);
             }
         }
+        locArray.splice(0,1);
+        locArray.splice(28,1);
+        locArray.splice(868,1);
+        locArray.splice(897,1);
     }
 
     function locationGenerator(){
-        var randomNum = Math.floor(Math.random() * 900);
+        var randomNum = Math.floor(Math.random() * 897);
         randomPos = [locArray[randomNum][0], locArray[randomNum][1]];
     }
 
@@ -282,13 +302,16 @@
 		image.onload = imageLoaded();
 		while(!allLoaded) { } // very risky 
 
-        // GAME INIT
+        // Initial snake with length 3
         snakeArray.push([0,0]);
         snakeArray.push([20,0]);
         snakeArray.push([40,0]);
 
         generatePixelArray();
         locationGenerator();
+
+        //Show initial speed
+        document.getElementById("speed").innerHTML = "Speed: " + speed;
 
 		// handle keyboard
         document.addEventListener("keydown", doKeyDown, false);
@@ -333,6 +356,7 @@
 
     <h2>Snake</h2>
     <p id="message"></p> 
+    <p id="speed"></p>
     <p id="score"></p>
     <p id="highScore"></p>
 
